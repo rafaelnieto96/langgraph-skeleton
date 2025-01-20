@@ -69,12 +69,12 @@ def agent_node(state, agent, name, chat_session):
         chat_session.add_message(message, is_human=True)
     
     # Get mock response (for testing)
-    # result = MOCK_RESPONSES[name]
+    result = MOCK_RESPONSES[name]
     
     # Actual agent invocation (commented for testing)
-    result = agent.invoke({
-        "messages": history_messages + [HumanMessage(content=message)]
-    })
+    # result = agent.invoke({
+    #     "messages": history_messages + [HumanMessage(content=message)]
+    # })
     
     if name != "orchestrator":
         output_content = result.get("output", "No output provided by agent.")

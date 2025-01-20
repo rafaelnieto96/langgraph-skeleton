@@ -8,3 +8,4 @@ python-dotenv
 typing-extensions
 langchain-community
 langchain-ollama
+pytest
