@@ -18,7 +18,7 @@ class ChatSession:
         self.user_id = user_id
         self.message_history = SQLChatMessageHistory(
             session_id=str(user_id),
-            connection_string=db_path
+            connection=db_path
         )
 
     def add_message(self, message, is_human=True):
@@ -32,14 +32,14 @@ class ChatSession:
         return "\n".join(str(message) for message in self.message_history.messages)
 
 def create_graph(chat_session):
-    print("\nInitializing graph creation...")
+    # Initialize workflow and agents
     workflow = StateGraph(dict)
     
     orchestrator = create_orchestrator_agent()
     programmer = create_programmer_agent()
     crypto = create_crypto_agent()
     
-    print("\nAdding nodes to graph...")
+    # Add agent nodes to workflow
     workflow.add_node("orchestrator", 
         lambda state: agent_node(state, orchestrator, "orchestrator", chat_session))
     workflow.add_node("programmer", 
@@ -47,7 +47,7 @@ def create_graph(chat_session):
     workflow.add_node("crypto", 
         lambda state: agent_node(state, crypto, "crypto", chat_session))
     
-    print("\nConfiguring edges...")
+    # Configure workflow routing
     workflow.add_edge(START, "orchestrator")
     workflow.add_conditional_edges(
         "orchestrator",
@@ -59,16 +59,19 @@ def create_graph(chat_session):
 
 def agent_node(state, agent, name, chat_session):
     print(f"\n[{name.upper()} NODE]")
+
+    # Process message through agent node
     message = state["message"]
-    
     print(f"Processing message for user {chat_session.user_id}: {message}")
     history_messages = chat_session.message_history.messages
     
     if name != "orchestrator":
         chat_session.add_message(message, is_human=True)
     
+    # Get mock response (for testing)
     result = MOCK_RESPONSES[name]
     
+    # Actual agent invocation (commented for testing)
     # result = agent.invoke({
     #     "messages": history_messages + [HumanMessage(content=message)]
     # })
@@ -88,20 +91,19 @@ def agent_node(state, agent, name, chat_session):
 if __name__ == "__main__":
     print("\n=== Starting Multi-Agent System ===")
     try:
+        # Initialize session and process message
         user_id = 1
         input_message = "Give me information about cryptocurrencies"
         chat_session = ChatSession(user_id)
         
+        # Create and execute workflow
         graph = create_graph(chat_session)
-        
-        initial_state = {
-            "message": input_message
-        }
-        
+        initial_state = {"message": input_message}
         final_state = graph.invoke(initial_state)
-        print('final_statefinal_statefinal_state', final_state)
+        
+        # Display results
         print("\n=== FINAL RESULTS ===")
-        print(f"User ID: {user_id}")
+        print('Final response: ', final_state['message'])
         print("Complete context:")
         print(chat_session.context)
         
